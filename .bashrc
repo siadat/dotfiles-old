@@ -146,6 +146,22 @@ function anywait() {
   done
 }
 
+function multi-ed() {
+  echo "Enter commands to execute on:"
+  for file in $@; do
+    echo "  $file"
+  done
+
+  tmp=$(mktemp)
+  vim $tmp
+
+  for file in $@; do
+    cat $tmp | ed $file
+  done
+
+  rm $tmp
+}
+
 function restart-by-pid() {
   # Usage: restart-by-pid "~/.CMD.pid" "CMD"
   local pidfile=$1
@@ -191,6 +207,11 @@ export GOPATH=$HOME/go
 export PATH=$PATH:/home/sina/go1.7.1/bin:$GOPATH/bin
 export CDPATH=$CDPATH:$GOPATH/src
 
+# go:gvm
+#_disabled_# [[ -s "/home/sina/.gvm/scripts/gvm" ]] && source "/home/sina/.gvm/scripts/gvm"
+#_disabled_# export GOPATH=~/go
+#_disabled_# export PATH=$PATH:~/go/bin
+
 # git-prompt
 #_disabled_# [[ $- == *i* ]] && . ~/git-prompt/git-prompt.sh
 
@@ -216,7 +237,3 @@ export NVM_DIR="/home/sina/.nvm"
 #_disabled_# export PATH="$HOME/.jenv/bin:$PATH"
 #_disabled_# eval "$(jenv init -)"
 
-# go:gvm
-#_disabled_# [[ -s "/home/sina/.gvm/scripts/gvm" ]] && source "/home/sina/.gvm/scripts/gvm"
-#_disabled_# export GOPATH=~/go
-#_disabled_# export PATH=$PATH:~/go/bin
