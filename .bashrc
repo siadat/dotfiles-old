@@ -37,7 +37,7 @@ fi
 
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
-    xterm-color) color_prompt=yes;;
+    xterm-color|*-256color) color_prompt=yes;;
 esac
 
 # uncomment for a colored prompt, if the terminal has the capability; turned
@@ -47,12 +47,12 @@ esac
 
 if [ -n "$force_color_prompt" ]; then
     if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-	# We have color support; assume it's compliant with Ecma-48
-	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-	# a case would tend to support setf rather than setaf.)
-	color_prompt=yes
+  # We have color support; assume it's compliant with Ecma-48
+  # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+  # a case would tend to support setf rather than setaf.)
+  color_prompt=yes
     else
-	color_prompt=
+  color_prompt=
     fi
 fi
 
@@ -149,11 +149,11 @@ function vag() {
 
 function anywait() {
   # Usage: anywait PID1 PID2
-	for pid in "$@"; do
-		while kill -0 "$pid"; do
-			sleep 0.1
-		done
-	done
+  for pid in "$@"; do
+    while kill -0 "$pid"; do
+      sleep 0.1
+    done
+  done
 }
 
 function multi-ed() {
@@ -177,22 +177,22 @@ function restart-by-pid() {
   local pidfile=$1
   local cmd=$2
   if [ -f "$pidfile" ]; then
-		if [ ! -f "/proc/$(cat $pidfile)/cmdline" ]; then
+    if [ ! -f "/proc/$(cat $pidfile)/cmdline" ]; then
       rm $pidfile
       echo "$pidfile was stalled. Please stop process manually."
       return
-		else
-			# NOTE: /proc/PID/cmdline seems to remove spaces from actual command.
-			if [ "$(cat /proc/$(cat $pidfile)/cmdline | tr "\0" " ")" = "${cmd// /}" ]; then
-				kill $(cat $pidfile)
-				anywait $(cat $pidfile) 2> /dev/null
-			fi
-		fi
+    else
+      # NOTE: /proc/PID/cmdline seems to remove spaces from actual command.
+      if [ "$(cat /proc/$(cat $pidfile)/cmdline | tr "\0" " ")" = "${cmd// /}" ]; then
+        kill $(cat $pidfile)
+        anywait $(cat $pidfile) 2> /dev/null
+      fi
+    fi
   fi
 
   function run() {
     bash -c "$cmd"
-		rm $pidfile
+    rm $pidfile
   }
   unset -f run
 
@@ -210,7 +210,6 @@ function start-go-docs-and-blog() {
   # restart-by-pid ~/.godoc.pid "godoc -http=:6060"
   # restart-by-pid ~/.goblog.pid "cd ~/cloned/goblog && ./blog/blog -http=:6061"
 }
-
 
 # go
 export GOROOT=/home/sina/go1.7.3
@@ -271,6 +270,11 @@ function ip() {
 # dockerfuncs:
 # source ~/.dockerfunc
 
+# base16 shell
+# Source: https://github.com/chriskempson/base16-shell
+BASE16_SHELL=$HOME/.config/base16-shell/
+[ -n "$PS1" ] && [ -s $BASE16_SHELL/profile_helper.sh ] && eval "$($BASE16_SHELL/profile_helper.sh)"
+
 # kubectl
 source <(kubectl completion bash)
 
@@ -281,4 +285,15 @@ function restart-wifi() {
   sudo ifconfig wlp1s0 up
   sudo service networking      restart
   sudo service network-manager restart
+}
+
+function setproxy() {
+  export {http,https,ftp,HTTP,HTTPS}_proxy=http://$1:$2
+  export no_proxy="localhost,127.0.0.1,meta.cafebazaar.ir,master.cafecluster"
+  echo "Proxy variable(http,https,ftp) set to $1:$2"
+}
+
+function unsetproxy() {
+  unset {http,https,ftp,HTTP,HTTPS,no}_proxy
+  echo "Proxy variable(http,https,ftp) is unset!"
 }
