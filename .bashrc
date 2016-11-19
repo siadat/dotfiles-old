@@ -141,6 +141,7 @@ alias tmux-detach-all-clients='tmux detach-client -Pa'
 alias tmux-kill-all-panes='tmux kill-pane -a -t.'
 alias cd..='cd ..'
 alias open='xdg-open'
+alias abspath='readlink -f'
 
 function vag() {
   vim -O $(ag -l $@)
@@ -210,12 +211,24 @@ function start-go-docs-and-blog() {
   # restart-by-pid ~/.goblog.pid "cd ~/cloned/goblog && ./blog/blog -http=:6061"
 }
 
-export CDPATH=$CDPATH:$GOPATH/src:~/src
 
 # go
 export GOROOT=/home/sina/go1.7.3
 export GOPATH=$HOME/go
 export PATH=$PATH:/home/sina/go1.7.3/bin:$GOPATH/bin
+
+export CDPATH=$CDPATH:$GOPATH/src:~/src
+export PATH=$PATH:~/bin
+
+function godeps() {
+  echo "Standard library"
+  echo "================"
+  go list -f '{{join .Deps "\n"}}' |  xargs go list -f '{{if not .Standard}}{{.ImportPath}}{{end}}'
+  # echo
+  # echo "External"
+  # echo "========"
+  # go list -f '{{join .Deps "\n"}}' |  xargs go list -f '{{if .Standard}}{{.ImportPath}}{{end}}'
+}
 
 # go:gvm
 #_disabled_# [[ -s "/home/sina/.gvm/scripts/gvm" ]] && source "/home/sina/.gvm/scripts/gvm"
@@ -257,3 +270,15 @@ function ip() {
 
 # dockerfuncs:
 # source ~/.dockerfunc
+
+# kubectl
+source <(kubectl completion bash)
+
+export EDITOR=vim
+
+function restart-wifi() {
+  sudo ifconfig wlp1s0 down
+  sudo ifconfig wlp1s0 up
+  sudo service networking      restart
+  sudo service network-manager restart
+}
