@@ -47,12 +47,12 @@ esac
 
 if [ -n "$force_color_prompt" ]; then
     if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-  # We have color support; assume it's compliant with Ecma-48
-  # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-  # a case would tend to support setf rather than setaf.)
-  color_prompt=yes
+	# We have color support; assume it's compliant with Ecma-48
+	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+	# a case would tend to support setf rather than setaf.)
+	color_prompt=yes
     else
-  color_prompt=
+	color_prompt=
     fi
 fi
 
@@ -117,6 +117,14 @@ fi
 # Added by Sina
 # -------------
 
+function tmux-start-or-attach() {
+  tmux -2 attach -d || tmux -2 new -s default
+}
+
+if command -v tmux>/dev/null; then
+  [[ ! $TERM =~ screen ]] && [ -z $TMUX ] && tmux-start-or-attach
+fi
+
 # Prefix disabled stuff with #_disabled_#
 export LC_ALL="en_US.utf-8"
 export PS1='\[\e[1;33m\]\w${text}$\[\e[m\] '
@@ -132,6 +140,7 @@ alias wgetoffline='wget -c -H -e robots=off -p -k -E'
 alias tmux-detach-all-clients='tmux detach-client -Pa'
 alias tmux-kill-all-panes='tmux kill-pane -a -t.'
 alias cd..='cd ..'
+alias open='xdg-open'
 
 function vag() {
   vim -O $(ag -l $@)
@@ -139,11 +148,11 @@ function vag() {
 
 function anywait() {
   # Usage: anywait PID1 PID2
-  for pid in "$@"; do
-    while kill -0 "$pid"; do
-      sleep 0.1
-    done
-  done
+	for pid in "$@"; do
+		while kill -0 "$pid"; do
+			sleep 0.1
+		done
+	done
 }
 
 function multi-ed() {
@@ -167,22 +176,22 @@ function restart-by-pid() {
   local pidfile=$1
   local cmd=$2
   if [ -f "$pidfile" ]; then
-    if [ ! -f "/proc/$(cat $pidfile)/cmdline" ]; then
+		if [ ! -f "/proc/$(cat $pidfile)/cmdline" ]; then
       rm $pidfile
       echo "$pidfile was stalled. Please stop process manually."
       return
-    else
-      # NOTE: /proc/PID/cmdline seems to remove spaces from actual command.
-      if [ "$(cat /proc/$(cat $pidfile)/cmdline | tr "\0" " ")" = "${cmd// /}" ]; then
-        kill $(cat $pidfile)
-        anywait $(cat $pidfile) 2> /dev/null
-      fi
-    fi
+		else
+			# NOTE: /proc/PID/cmdline seems to remove spaces from actual command.
+			if [ "$(cat /proc/$(cat $pidfile)/cmdline | tr "\0" " ")" = "${cmd// /}" ]; then
+				kill $(cat $pidfile)
+				anywait $(cat $pidfile) 2> /dev/null
+			fi
+		fi
   fi
 
   function run() {
     bash -c "$cmd"
-    rm $pidfile
+		rm $pidfile
   }
   unset -f run
 
@@ -201,11 +210,12 @@ function start-go-docs-and-blog() {
   # restart-by-pid ~/.goblog.pid "cd ~/cloned/goblog && ./blog/blog -http=:6061"
 }
 
+export CDPATH=$CDPATH:$GOPATH/src:~/src
+
 # go
-export GOROOT=/home/sina/go1.7.1
+export GOROOT=/home/sina/go1.7.3
 export GOPATH=$HOME/go
-export PATH=$PATH:/home/sina/go1.7.1/bin:$GOPATH/bin
-export CDPATH=$CDPATH:$GOPATH/src
+export PATH=$PATH:/home/sina/go1.7.3/bin:$GOPATH/bin
 
 # go:gvm
 #_disabled_# [[ -s "/home/sina/.gvm/scripts/gvm" ]] && source "/home/sina/.gvm/scripts/gvm"
@@ -225,6 +235,14 @@ export CDPATH=$CDPATH:$GOPATH/src
 export NVM_DIR="/home/sina/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
 
+function ip() {
+  if [ -z "$1" ]; then
+    hostname -I
+    return
+  fi
+  sed -n "/$1/,/^HostName/Ip" ~/.ssh/config | grep -i hostname | perl -pe 's/^hostname\s+//i'
+}
+
 # jupyter (added by Anaconda3 4.1.1 installer)
 #_disabled_# export PATH="/home/sina/workshop/anaconda3/bin:$PATH"
 
@@ -237,3 +255,5 @@ export NVM_DIR="/home/sina/.nvm"
 #_disabled_# export PATH="$HOME/.jenv/bin:$PATH"
 #_disabled_# eval "$(jenv init -)"
 
+# dockerfuncs:
+# source ~/.dockerfunc
